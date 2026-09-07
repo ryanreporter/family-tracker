@@ -160,10 +160,24 @@ async function load() {
     const res = await fetch('/api/state');
     if (!res.ok) return;
     const data = await res.json();
-    renderTopline(data.budget.topline);
-    renderBuckets(data.budget.buckets);
+
+    // If the user is actively typing in a bucket/limit field, rebuilding
+    // those cards right now would wipe out whatever they've typed but not
+    // yet saved. Skip just those cards until they click away or hit Save;
+    // the rest of the page (transactions, exercise, dropdowns) still stays
+    // live. Only an input/select counts as "editing" — the Save button
+    // itself also lives inside .edit-row, and focus lands on it right after
+    // a click, which must NOT block the immediate post-save refresh.
+    const active = document.activeElement;
+    const editingField =
+      active && (active.tagName === 'INPUT' || active.tagName === 'SELECT') && active.closest('.edit-row');
+    if (!editingField) {
+      renderTopline(data.budget.topline);
+      renderBuckets(data.budget.buckets);
+      renderCaloriePeople(data.calories.people);
+    }
+
     renderTransactions(data.budget.recentTransactions);
-    renderCaloriePeople(data.calories.people);
     renderExercise(data.exercise.entries);
     populateEntryFormDropdowns(data);
   } catch (err) {
