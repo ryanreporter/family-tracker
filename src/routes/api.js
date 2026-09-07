@@ -92,4 +92,19 @@ router.post('/exercise/entries', (req, res) => {
   res.json({ ok: true });
 });
 
+// --- Deletions: totals are always computed live, so a delete immediately
+// rolls the entry off the relevant bucket/topline/calorie total. ---
+
+router.delete('/budget/transactions/:id', (req, res) => {
+  const result = budgetLogic.deleteTransaction(Number(req.params.id));
+  if (!result) return res.status(404).json({ error: 'transaction not found' });
+  res.json(result);
+});
+
+router.delete('/calories/entries/:id', (req, res) => {
+  const status = calorieLogic.deleteEntry(Number(req.params.id));
+  if (!status) return res.status(404).json({ error: 'entry not found' });
+  res.json(status);
+});
+
 module.exports = router;

@@ -49,6 +49,12 @@ function populateSelect(selectEl, items, valueKey, labelKey) {
   if (items.some((i) => String(i[valueKey]) === prevValue)) selectEl.value = prevValue;
 }
 
+async function deleteItem(url) {
+  const res = await fetch(url, { method: 'DELETE' });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 function showFormMsg(el, message, isError) {
   el.textContent = message;
   el.classList.toggle('error', !!isError);
@@ -79,10 +85,9 @@ function renderBuckets(buckets) {
   el.innerHTML = buckets.map((b) => `
     <div class="card">
       <div class="bucket-name">${b.name} (${b.period})</div>
-      <div class="remaining ${remainingClass(b.remaining)}">${fmtMoney(b.remaining)} left of ${fmtMoney(b.limit)}</div>
+      <div class="sub">Spent this ${b.period === 'weekly' ? 'week' : 'month'}: ${fmtMoney(b.spent)}</div>
       <div class="edit-row" data-id="${b.id}">
         <input type="text" class="f-name" value="${b.name}" />
-        <input type="number" step="0.01" class="f-limit" value="${b.limit}" />
         <select class="f-period">
           <option value="weekly" ${b.period === 'weekly' ? 'selected' : ''}>weekly</option>
           <option value="monthly" ${b.period === 'monthly' ? 'selected' : ''}>monthly</option>
@@ -91,7 +96,17 @@ function renderBuckets(buckets) {
       </div>
     </div>
   `).join('');
-  el.querySelectorAll('.edit-row').forEach(wireBucketEditRow);
+  el.querySelectorAll('.edit-row').forEach(wireBucketNameEditRow);
+}
+
+function wireBucketNameEditRow(row) {
+  row.querySelector('.save-bucket').addEventListener('click', async () => {
+    const id = row.dataset.id;
+    const name = row.querySelector('.f-name').value;
+    const period = row.querySelector('.f-period').value;
+    await patchJson(`/api/budget/buckets/${id}`, { name, period });
+    load();
+  });
 }
 
 function wireBucketEditRow(row) {
@@ -110,9 +125,18 @@ function renderTransactions(txns) {
   el.innerHTML = txns.map((t) => `
     <li>
       ${fmtMoney(t.amount)} — ${t.bucket_name} — ${t.description || ''}
-      <div class="meta">${t.person_name || 'unknown'} · ${timeAgo(t.created_at)}</div>
+      <div class="meta">
+        ${t.person_name || 'unknown'} · ${timeAgo(t.created_at)}
+        <button class="delete-btn" data-id="${t.id}">Delete</button>
+      </div>
     </li>
   `).join('') || '<li class="meta">No transactions yet.</li>';
+  el.querySelectorAll('.delete-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      await deleteItem(`/api/budget/transactions/${btn.dataset.id}`);
+      load();
+    });
+  });
 }
 
 function renderCaloriePeople(people) {
@@ -127,7 +151,15 @@ function renderCaloriePeople(people) {
       </div>
       <h3>Today</h3>
       <ul class="list">
-        ${p.entries.map((e) => `<li>${e.calories} cal — ${e.description || ''}<div class="meta">${timeAgo(e.created_at)}</div></li>`).join('') || '<li class="meta">Nothing logged today.</li>'}
+        ${p.entries.map((e) => `
+          <li>
+            ${e.calories} cal — ${e.description || ''}
+            <div class="meta">
+              ${timeAgo(e.created_at)}
+              <button class="delete-entry-btn" data-id="${e.id}">Delete</button>
+            </div>
+          </li>
+        `).join('') || '<li class="meta">Nothing logged today.</li>'}
       </ul>
     </div>
   `).join('');
@@ -136,6 +168,12 @@ function renderCaloriePeople(people) {
       const id = row.dataset.id;
       const daily_calorie_limit = row.querySelector('.f-limit').value;
       await patchJson(`/api/calories/people/${id}`, { daily_calorie_limit });
+      load();
+    });
+  });
+  el.querySelectorAll('.delete-entry-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      await deleteItem(`/api/calories/entries/${btn.dataset.id}`);
       load();
     });
   });

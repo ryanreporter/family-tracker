@@ -74,7 +74,17 @@ h3 { font-size: 0.9rem; color: var(--muted); margin: 16px 0 4px; }
 
 .list { list-style: none; padding: 0; margin: 0; font-size: 0.85rem; }
 .list li { border-bottom: 1px solid var(--border); padding: 6px 0; }
-.list .meta { color: var(--muted); }
+.list .meta { color: var(--muted); display: flex; align-items: center; gap: 8px; }
+
+.delete-btn, .delete-entry-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--bad);
+  font-size: 0.75rem;
+  padding: 1px 7px;
+  cursor: pointer;
+  margin-left: auto;
+}
 
 .entry-form {
   display: flex;

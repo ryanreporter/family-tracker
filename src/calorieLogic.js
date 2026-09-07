@@ -81,6 +81,16 @@ async function maybeSendLowAlert(person, status) {
   );
 }
 
+// Consumed/remaining are always computed live via SUM over calorie_entries,
+// so a deleted row simply stops counting on the next read.
+function deleteEntry(id) {
+  const entry = db.prepare('SELECT person_id FROM calorie_entries WHERE id = ?').get(id);
+  if (!entry) return null;
+  db.prepare('DELETE FROM calorie_entries WHERE id = ?').run(id);
+  const person = getPerson(entry.person_id);
+  return person ? personStatus(person) : null;
+}
+
 async function updatePersonLimit(id, dailyLimit) {
   const person = getPerson(id);
   if (!person) return null;
@@ -99,6 +109,7 @@ module.exports = {
   personStatus,
   todaysEntries,
   addEntry,
+  deleteEntry,
   updatePersonLimit,
   maybeSendLowAlert,
 };

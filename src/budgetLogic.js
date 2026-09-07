@@ -150,6 +150,22 @@ async function applyTransactionById({ bucketId, amount, description, personId })
   return applyTransactionToBucket(bucket, { amount, description, personId });
 }
 
+// Deleting a transaction needs no separate rollback step: bucket and topline
+// totals are always computed live via SUM over budget_transactions, so a
+// deleted row simply stops counting toward either total on the next read.
+function deleteTransaction(id) {
+  const txn = db.prepare('SELECT bucket_id FROM budget_transactions WHERE id = ?').get(id);
+  if (!txn) return null;
+  db.prepare('DELETE FROM budget_transactions WHERE id = ?').run(id);
+
+  const bucket = getBucket(txn.bucket_id);
+  const topline = allBuckets().find((b) => b.is_topline);
+  return {
+    bucket: bucket ? bucketStatus(bucket) : null,
+    topline: topline ? bucketStatus(topline) : null,
+  };
+}
+
 function updateBucket(id, fields) {
   const bucket = getBucket(id);
   if (!bucket) return null;
@@ -169,6 +185,7 @@ module.exports = {
   recentTransactions,
   applyTransaction,
   applyTransactionById,
+  deleteTransaction,
   updateBucket,
   getBucket,
 };

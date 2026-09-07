@@ -4,11 +4,13 @@ Text-in Budget / Food / Exercise tracker for two people, with a live web dashboa
 
 ## How it works
 
-- **Budget**: 4 editable buckets (name, $ limit, weekly/monthly) plus a topline "Total Budget"
-  that always tracks the sum of all bucket spending, edited independently. Texting
-  `$50 for Donuts in Dining` logs a $50 transaction against the Dining bucket, deducting
-  it from both Dining and the topline total. The text reply reports only the topline
-  total remaining for the period (not the individual bucket's remaining).
+- **Budget**: 4 buckets used purely as spending categories (name + weekly/monthly, editable)
+  — they have no $ limit of their own, just a running "spent this week/month" tally for
+  reference. The only actual $ limit lives on the topline "Total Budget", which tracks
+  the sum of all bucket spending. Texting `$50 for Donuts in Dining` logs a $50
+  transaction against the Dining bucket, deducting it from the topline total. The text
+  reply reports the topline remaining only — thresholds (25/15/10/0%) and their alerts
+  are checked against the topline only, never per-bucket.
 - **Food**: 2 people, each with an independently editable daily calorie limit. Texting
   `Hamburger and fries for Joe` looks up average calories per item from the USDA
   FoodData Central database (falling back to an AI estimate if a food isn't found) and
@@ -25,6 +27,9 @@ Text-in Budget / Food / Exercise tracker for two people, with a live web dashboa
   section also has an "Add" form for typing entries directly (useful before your
   Twilio number is verified, or any time texting isn't convenient) — it goes through
   the exact same logic as texting, so thresholds/alerts fire the same way either way.
+  Budget transactions and calorie entries can also be deleted from the dashboard —
+  totals are always computed live from the underlying entries, so a delete immediately
+  rolls it off the relevant bucket/topline/calorie total.
 - Incoming texts are interpreted by Claude (Anthropic API) so phrasing can be loose —
   it classifies the message as budget/calories/exercise and extracts the structured
   fields.
