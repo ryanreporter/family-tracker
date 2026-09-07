@@ -1,0 +1,152 @@
+<title>SMS Consent Notice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f5f2;
+    --surface: #ffffff;
+    --ink: #1b1d1f;
+    --muted: #5b6168;
+    --accent: #3b5b92;
+    --border: #e2e4e0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15171a;
+      --surface: #1c1f23;
+      --ink: #ecedee;
+      --muted: #9aa1a9;
+      --accent: #86a6d9;
+      --border: #2b2e33;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15171a;
+    --surface: #1c1f23;
+    --ink: #ecedee;
+    --muted: #9aa1a9;
+    --accent: #86a6d9;
+    --border: #2b2e33;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 64px 24px 80px;
+    display: flex;
+    justify-content: center;
+  }
+
+  main {
+    width: 100%;
+    max-width: 620px;
+  }
+
+  .eyebrow {
+    font-family: "Public Sans", sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+
+  h1 {
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    line-height: 1.15;
+    text-wrap: balance;
+    margin: 0 0 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  p {
+    font-size: 1.02rem;
+    line-height: 1.65;
+    max-width: 64ch;
+    margin: 0 0 20px;
+  }
+
+  .disclosure {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 28px 30px;
+    margin-bottom: 32px;
+  }
+
+  .disclosure p:last-child { margin-bottom: 0; }
+
+  .keyword {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+    color: var(--muted);
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  footer .label {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    font-size: 0.7rem;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  footer .value {
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+</style>
+
+<main>
+  <p class="eyebrow">SMS &amp; MMS Messaging Program</p>
+  <h1>Consent &amp; Opt-In Disclosure</h1>
+
+  <div class="disclosure">
+    <p>
+      This messaging program is <span class="keyword">private</span> and used only by
+      two pre-authorized household members. Each participant's phone number was added
+      directly by the account owner, with that participant's <span class="keyword">verbal
+      consent</span>, to receive text messages related to household budget, food, and
+      exercise tracking. No phone numbers are collected from the public, and no mobile
+      information is shared or sold to third parties or affiliates for marketing or
+      promotional purposes.
+    </p>
+    <p>
+      Message frequency varies based on usage. Message and data rates may apply,
+      depending on your mobile carrier plan. Reply <span class="keyword">STOP</span> at
+      any time to opt out of further messages, or reply <span class="keyword">HELP</span>
+      for assistance.
+    </p>
+  </div>
+
+  <footer>
+    <div>
+      <span class="label">Program</span>
+      <span class="value">Family Tracker (personal use)</span>
+    </div>
+    <div>
+      <span class="label">Opt-in method</span>
+      <span class="value">Verbal, household-only</span>
+    </div>
+  </footer>
+</main>

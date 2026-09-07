@@ -1,0 +1,104 @@
+:root {
+  color-scheme: light dark;
+  --fg: #111;
+  --bg: #fff;
+  --muted: #666;
+  --border: #ccc;
+  --bad: #b00020;
+  --ok: #1a7a1a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg: #eee;
+    --bg: #111;
+    --muted: #999;
+    --border: #444;
+    --bad: #ff6b6b;
+    --ok: #6bcf6b;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  margin: 0;
+  padding: 16px;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+h1 { font-size: 1.3rem; margin: 0 0 16px; }
+h2 { font-size: 1.05rem; border-bottom: 1px solid var(--border); padding-bottom: 4px; margin: 24px 0 8px; }
+h3 { font-size: 0.9rem; color: var(--muted); margin: 16px 0 4px; }
+
+.card {
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.bucket-name { font-weight: 600; }
+.remaining { font-size: 1.1rem; }
+.remaining.negative { color: var(--bad); }
+.remaining.positive { color: var(--ok); }
+.sub { color: var(--muted); font-size: 0.85rem; }
+
+.edit-row { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.edit-row input, .edit-row select {
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  padding: 4px 6px;
+  font-size: 0.85rem;
+}
+.edit-row input[type="text"] { width: 90px; }
+.edit-row input[type="number"] { width: 70px; }
+.edit-row button {
+  background: var(--fg);
+  color: var(--bg);
+  border: none;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.list { list-style: none; padding: 0; margin: 0; font-size: 0.85rem; }
+.list li { border-bottom: 1px solid var(--border); padding: 6px 0; }
+.list .meta { color: var(--muted); }
+
+.entry-form {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.entry-form input, .entry-form select {
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  padding: 5px 7px;
+  font-size: 0.85rem;
+}
+.entry-form input[type="text"] { width: 140px; }
+.entry-form input[type="number"] { width: 90px; }
+.entry-form button {
+  background: var(--fg);
+  color: var(--bg);
+  border: none;
+  padding: 5px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.form-msg { font-size: 0.8rem; color: var(--muted); }
+.form-msg.error { color: var(--bad); }

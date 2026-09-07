@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Family Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Family Tracker</h1>
+
+  <section id="budget-section">
+    <h2>Budget</h2>
+    <div id="topline" class="card"></div>
+    <div id="buckets" class="grid"></div>
+
+    <h3>Add a transaction</h3>
+    <div class="entry-form" id="budget-entry-form">
+      <select id="budget-entry-bucket"></select>
+      <input type="number" step="0.01" id="budget-entry-amount" placeholder="Amount $" />
+      <input type="text" id="budget-entry-description" placeholder="Description" />
+      <select id="budget-entry-person"></select>
+      <button id="budget-entry-submit">Add</button>
+      <span class="form-msg" id="budget-entry-msg"></span>
+    </div>
+
+    <h3>Recent transactions</h3>
+    <ul id="transactions" class="list"></ul>
+  </section>
+
+  <section id="calorie-section">
+    <h2>Food</h2>
+    <div id="calorie-people" class="grid"></div>
+
+    <h3>Add a calorie entry</h3>
+    <div class="entry-form" id="calorie-entry-form">
+      <select id="calorie-entry-person"></select>
+      <input type="number" id="calorie-entry-calories" placeholder="Calories" />
+      <input type="text" id="calorie-entry-description" placeholder="Description (optional)" />
+      <button id="calorie-entry-submit">Add</button>
+      <span class="form-msg" id="calorie-entry-msg"></span>
+    </div>
+  </section>
+
+  <section id="exercise-section">
+    <h2>Exercise</h2>
+    <ul id="exercise-entries" class="list"></ul>
+
+    <h3>Add an exercise entry</h3>
+    <div class="entry-form" id="exercise-entry-form">
+      <select id="exercise-entry-person"></select>
+      <input type="text" id="exercise-entry-description" placeholder="e.g. Ran 3 miles" />
+      <button id="exercise-entry-submit">Add</button>
+      <span class="form-msg" id="exercise-entry-msg"></span>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
