@@ -1,7 +1,7 @@
 const path = require('path');
 const express = require('express');
-const basicAuth = require('express-basic-auth');
 const config = require('./config');
+const auth = require('./auth');
 require('./db'); // ensures schema + seed data exist before anything else runs
 
 const smsRoutes = require('./routes/sms');
@@ -19,14 +19,29 @@ app.get('/opt-in', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'opt-in.html'));
 });
 
-const dashboardAuth = basicAuth({
-  users: { [config.dashboard.user]: config.dashboard.pass },
-  challenge: true,
-  realm: 'family-tracker',
+// Login page and handler are unauthenticated by definition.
+app.get('/login', (req, res) => {
+  if (auth.isAuthenticated(req)) return res.redirect('/');
+  res.sendFile(path.join(__dirname, '..', 'public', 'login.html'));
 });
 
-app.use('/api', dashboardAuth, express.json(), apiRoutes);
-app.use('/', dashboardAuth, express.static(path.join(__dirname, '..', 'public')));
+app.post('/login', express.urlencoded({ extended: false }), (req, res) => {
+  const { username, password } = req.body;
+  if (!auth.checkCredentials(username, password)) {
+    return res.redirect('/login?error=1');
+  }
+  const sessionId = auth.createSession();
+  auth.setSessionCookie(req, res, sessionId);
+  res.redirect('/');
+});
+
+app.post('/logout', (req, res) => {
+  auth.clearSessionCookie(res);
+  res.redirect('/login');
+});
+
+app.use('/api', auth.requireLogin, express.json(), apiRoutes);
+app.use('/', auth.requireLogin, express.static(path.join(__dirname, '..', 'public')));
 
 app.listen(config.port, () => {
   console.log(`[server] Listening on port ${config.port}`);

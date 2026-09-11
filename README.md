@@ -22,8 +22,11 @@ Text-in Budget / Food / Exercise tracker for two people, with a live web dashboa
 - **Exercise**: a simple text-in log per person, listed on the dashboard for reference.
 - **Budget alerts**: both phone numbers get a text when the topline total budget drops
   to 25%, 15%, 10%, and 0% remaining for the current period.
-- **Dashboard**: one shared web page (protected by a login) both phones can open in a
-  browser; it polls every 5 seconds so either person's texts show up for both. Each
+- **Dashboard**: one shared web page (protected by a login page — using the same
+  `DASHBOARD_USER`/`DASHBOARD_PASS` you already set, no new env vars needed) both
+  phones can open in a browser; it polls every 5 seconds so either person's texts show
+  up for both. The login sets a 90-day cookie, so you only need to log in again after a
+  redeploy — no more repeated native browser popups. Each
   section also has an "Add" form for typing entries directly (useful before your
   Twilio number is verified, or any time texting isn't convenient) — it goes through
   the exact same logic as texting, so thresholds/alerts fire the same way either way.
