@@ -13,13 +13,22 @@ function todayDateStr() {
   return now().toISODate();
 }
 
-// Monday 00:00 in the configured timezone, as a UTC ISO instant string
-// (comparable lexicographically against created_at values, which are also
-// stored as UTC ISO strings).
+// The weekly reset moment: 11:59pm every Saturday, in the configured
+// timezone. "This week" runs from the most recent occurrence of that moment
+// up to (but not including) the next one.
+function weekResetMoment(dt) {
+  // Luxon weekday: 1=Mon..7=Sun, so Saturday = 6.
+  let saturday = dt.set({ weekday: 6, hour: 23, minute: 59, second: 0, millisecond: 0 });
+  if (dt < saturday) saturday = saturday.minus({ weeks: 1 });
+  return saturday;
+}
+
+function weekPeriodStart() {
+  return weekResetMoment(now());
+}
+
 function weekPeriodStartUtcIso() {
-  const n = now();
-  const monday = n.minus({ days: n.weekday - 1 }).startOf('day');
-  return monday.toUTC().toISO();
+  return weekPeriodStart().toUTC().toISO();
 }
 
 function monthPeriodStartUtcIso() {
@@ -33,12 +42,30 @@ function periodStartUtcIso(period) {
 
 // A stable key identifying "which period we're in", used to dedupe alerts.
 function periodKey(period) {
-  const n = now();
-  if (period === 'weekly') {
-    const monday = n.minus({ days: n.weekday - 1 }).startOf('day');
-    return monday.toISODate();
-  }
-  return n.toFormat('yyyy-MM');
+  if (period === 'weekly') return weekPeriodStart().toISODate();
+  return now().toFormat('yyyy-MM');
+}
+
+// The week that just closed at the most recent Saturday-11:59pm reset:
+// [start, end) where end is the current period's start.
+function previousWeekRange() {
+  const endDt = weekPeriodStart();
+  const startDt = endDt.minus({ weeks: 1 });
+  return { startDt, endDt };
+}
+
+// A human title for an archived week, e.g. "Week of Sep 7 - Sep 13, 2026".
+// startDt/endDt are the Saturday-23:59 boundaries; the displayed range is the
+// calendar days in between (Sunday through the closing Saturday).
+function weekLabel(startDt, endDt) {
+  const displayStart = startDt.plus({ minutes: 1 });
+  const displayEnd = endDt;
+  const sameYear = displayStart.year === displayEnd.year;
+  const startStr = displayStart.toFormat('MMM d');
+  const endStr = sameYear ? displayEnd.toFormat('MMM d, yyyy') : displayEnd.toFormat('MMM d, yyyy');
+  return sameYear
+    ? `Week of ${startStr} - ${endStr}`
+    : `Week of ${displayStart.toFormat('MMM d, yyyy')} - ${endStr}`;
 }
 
 module.exports = {
@@ -47,4 +74,7 @@ module.exports = {
   todayDateStr,
   periodStartUtcIso,
   periodKey,
+  weekPeriodStart,
+  previousWeekRange,
+  weekLabel,
 };

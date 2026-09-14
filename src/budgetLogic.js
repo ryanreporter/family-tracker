@@ -64,16 +64,21 @@ function allStatuses() {
   return allBuckets().map(bucketStatus);
 }
 
+// Scoped to the current week (since the last Saturday-11:59pm reset) so the
+// dashboard list resets along with the weekly totals — older weeks live on
+// in the archive instead.
 function recentTransactions(limit = 25) {
+  const since = periodStartUtcIso('weekly');
   return db
     .prepare(
       `SELECT t.id, t.amount, t.description, t.created_at, b.name AS bucket_name, p.name AS person_name
        FROM budget_transactions t
        JOIN budget_buckets b ON b.id = t.bucket_id
        LEFT JOIN people p ON p.id = t.person_id
+       WHERE t.created_at >= ?
        ORDER BY t.id DESC LIMIT ?`
     )
-    .all(limit);
+    .all(since, limit);
 }
 
 async function checkAndSendThresholdAlerts(bucket) {

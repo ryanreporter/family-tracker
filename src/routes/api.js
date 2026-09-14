@@ -2,6 +2,7 @@ const express = require('express');
 const budgetLogic = require('../budgetLogic');
 const calorieLogic = require('../calorieLogic');
 const exerciseLogic = require('../exerciseLogic');
+const archiveLogic = require('../archiveLogic');
 
 const router = express.Router();
 
@@ -105,6 +106,24 @@ router.delete('/calories/entries/:id', (req, res) => {
   const status = calorieLogic.deleteEntry(Number(req.params.id));
   if (!status) return res.status(404).json({ error: 'entry not found' });
   res.json(status);
+});
+
+// --- Weekly archive: normally runs automatically every Saturday 11:59pm,
+// but can also be triggered early from the dashboard. ---
+
+router.get('/archives', (req, res) => {
+  res.json(archiveLogic.listArchives());
+});
+
+router.get('/archives/:id', (req, res) => {
+  const archive = archiveLogic.getArchive(Number(req.params.id));
+  if (!archive) return res.status(404).json({ error: 'archive not found' });
+  res.json(archive);
+});
+
+router.post('/archives/reset-now', (req, res) => {
+  const result = archiveLogic.resetNow();
+  res.json(result);
 });
 
 module.exports = router;

@@ -9,6 +9,12 @@
 <body>
   <h1>Family Tracker</h1>
 
+  <section id="reset-section">
+    <button id="reset-now-btn">Reset week now</button>
+    <span class="form-msg" id="reset-now-msg"></span>
+    <p class="sub">Normally resets automatically every Saturday at 11:59pm. This week's items are archived, not deleted — see Archived Weeks below.</p>
+  </section>
+
   <section id="budget-section">
     <h2>Budget</h2>
     <div id="topline" class="card"></div>
@@ -53,6 +59,12 @@
       <button id="exercise-entry-submit">Add</button>
       <span class="form-msg" id="exercise-entry-msg"></span>
     </div>
+  </section>
+
+  <section id="archives-section">
+    <h2>Archived Weeks</h2>
+    <p class="sub">Kept for 3 months, then rolled off automatically.</p>
+    <ul id="archives-list" class="list"></ul>
   </section>
 
   <script src="app.js"></script>

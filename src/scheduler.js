@@ -3,6 +3,7 @@ const config = require('./config');
 const db = require('./db');
 const { todayDateStr } = require('./time');
 const calorieLogic = require('./calorieLogic');
+const archiveLogic = require('./archiveLogic');
 const { sendSms } = require('./twilioClient');
 
 async function sendDailySummaries() {
@@ -37,10 +38,28 @@ async function checkLowCalorieAlerts() {
   }
 }
 
+// Fires at 11:59pm every Saturday: snapshots the week that's ending into
+// weekly_archives (so it stays browsable), then rolls off anything past the
+// 3-month retention window. Weekly budget totals reset on their own right
+// after this, since bucketStatus() computes "spent this week" from the new
+// period boundary in time.js.
+async function runWeeklyArchive() {
+  try {
+    const result = archiveLogic.archivePreviousWeek();
+    archiveLogic.pruneOlderThan3Months();
+    if (result) console.log(`[scheduler] Archived "${result.title}".`);
+  } catch (err) {
+    console.error('[scheduler] Weekly archive/reset failed:', err);
+  }
+}
+
 function start() {
   cron.schedule('0 21 * * *', sendDailySummaries, { timezone: config.timezone });
   cron.schedule('*/10 * * * *', checkLowCalorieAlerts, { timezone: config.timezone });
-  console.log(`[scheduler] Started (timezone ${config.timezone}): 9pm summary + 10-min low-calorie sweep.`);
+  cron.schedule('59 23 * * 6', runWeeklyArchive, { timezone: config.timezone });
+  console.log(
+    `[scheduler] Started (timezone ${config.timezone}): 9pm summary + 10-min low-calorie sweep + Saturday 11:59pm weekly archive/reset.`
+  );
 }
 
-module.exports = { start, sendDailySummaries, checkLowCalorieAlerts };
+module.exports = { start, sendDailySummaries, checkLowCalorieAlerts, runWeeklyArchive };

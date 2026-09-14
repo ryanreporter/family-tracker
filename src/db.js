@@ -66,6 +66,17 @@ db.exec(`
     alert_type TEXT NOT NULL,
     UNIQUE(person_id, entry_date, alert_type)
   );
+
+  CREATE TABLE IF NOT EXISTS weekly_archives (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    week_key TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    week_start TEXT NOT NULL,
+    week_end TEXT NOT NULL,
+    total_spent REAL NOT NULL DEFAULT 0,
+    data TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );
 `);
 
 function seed() {

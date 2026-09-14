@@ -186,6 +186,88 @@ function renderExercise(entries) {
   `).join('') || '<li class="meta">No exercise logged yet.</li>';
 }
 
+function fmtDateTime(iso) {
+  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+let archivesCache = [];
+let openArchiveId = null;
+
+function renderArchiveDetail(archive) {
+  const { transactions, calorieEntries, exerciseEntries } = archive.data;
+  const txHtml = transactions.map((t) => `<li>${fmtMoney(t.amount)} — ${t.bucket_name} — ${t.description || ''} <span class="meta">(${t.person_name || 'unknown'})</span></li>`).join('') || '<li class="meta">No spending.</li>';
+  const calHtml = calorieEntries.map((c) => `<li>${c.calories} cal — ${c.description || ''} <span class="meta">(${c.person_name})</span></li>`).join('') || '<li class="meta">Nothing logged.</li>';
+  const exHtml = exerciseEntries.map((e) => `<li>${e.description} <span class="meta">(${e.person_name})</span></li>`).join('') || '<li class="meta">No exercise logged.</li>';
+  return `
+    <div class="archive-detail">
+      <h4>Budget (${fmtMoney(archive.total_spent)} total)</h4>
+      <ul class="list">${txHtml}</ul>
+      <h4>Calories</h4>
+      <ul class="list">${calHtml}</ul>
+      <h4>Exercise</h4>
+      <ul class="list">${exHtml}</ul>
+    </div>
+  `;
+}
+
+function renderArchives(archives) {
+  archivesCache = archives;
+  const el = document.getElementById('archives-list');
+  el.innerHTML = archives.map((a) => `
+    <li>
+      <button class="archive-toggle" data-id="${a.id}">${a.title}</button>
+      <div class="meta">${fmtMoney(a.total_spent)} spent · archived ${fmtDateTime(a.created_at)}</div>
+      <div class="archive-body" id="archive-body-${a.id}" hidden></div>
+    </li>
+  `).join('') || '<li class="meta">No archived weeks yet.</li>';
+
+  el.querySelectorAll('.archive-toggle').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = Number(btn.dataset.id);
+      const bodyEl = document.getElementById(`archive-body-${id}`);
+      if (openArchiveId === id) {
+        bodyEl.hidden = true;
+        openArchiveId = null;
+        return;
+      }
+      if (openArchiveId != null) {
+        const prevBody = document.getElementById(`archive-body-${openArchiveId}`);
+        if (prevBody) prevBody.hidden = true;
+      }
+      openArchiveId = id;
+      const res = await fetch(`/api/archives/${id}`);
+      const archive = await res.json();
+      bodyEl.innerHTML = renderArchiveDetail(archive);
+      bodyEl.hidden = false;
+    });
+  });
+}
+
+async function loadArchives() {
+  try {
+    const res = await fetch('/api/archives');
+    if (!res.ok) return;
+    renderArchives(await res.json());
+  } catch (err) {
+    console.error('Failed to load archives', err);
+  }
+}
+
+function wireResetButton() {
+  document.getElementById('reset-now-btn').addEventListener('click', async () => {
+    const msgEl = document.getElementById('reset-now-msg');
+    if (!confirm("Archive this week's items and reset the dashboard to zero now?")) return;
+    try {
+      await postJson('/api/archives/reset-now', {});
+      showFormMsg(msgEl, 'Reset done.', false);
+      load();
+      loadArchives();
+    } catch (err) {
+      showFormMsg(msgEl, err.message, true);
+    }
+  });
+}
+
 function populateEntryFormDropdowns(data) {
   populateSelect(document.getElementById('budget-entry-bucket'), data.budget.buckets, 'id', 'name');
   populateSelect(document.getElementById('budget-entry-person'), data.calories.people, 'id', 'name');
@@ -273,5 +355,7 @@ function wireEntryForms() {
 }
 
 wireEntryForms();
+wireResetButton();
 load();
+loadArchives();
 setInterval(load, POLL_MS);

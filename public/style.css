@@ -112,3 +112,26 @@ h3 { font-size: 0.9rem; color: var(--muted); margin: 16px 0 4px; }
 }
 .form-msg { font-size: 0.8rem; color: var(--muted); }
 .form-msg.error { color: var(--bad); }
+
+#reset-section { margin-bottom: 8px; }
+#reset-now-btn {
+  background: var(--fg);
+  color: var(--bg);
+  border: none;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.archive-toggle {
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.archive-body { margin-top: 8px; }
+.archive-detail h4 { font-size: 0.8rem; color: var(--muted); margin: 10px 0 4px; }
