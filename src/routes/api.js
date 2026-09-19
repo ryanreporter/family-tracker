@@ -3,28 +3,47 @@ const budgetLogic = require('../budgetLogic');
 const calorieLogic = require('../calorieLogic');
 const exerciseLogic = require('../exerciseLogic');
 const archiveLogic = require('../archiveLogic');
+const upcomingLogic = require('../upcomingLogic');
+const config = require('../config');
 
 const router = express.Router();
+
+function requireFeature(name) {
+  return (req, res, next) => {
+    if (!config.features[name]) return res.status(404).json({ error: `${name} tracking is turned off` });
+    next();
+  };
+}
 
 router.get('/state', (req, res) => {
   const buckets = budgetLogic.allStatuses();
   const topline = buckets.find((b) => b.isTopline);
   const regularBuckets = buckets.filter((b) => !b.isTopline);
 
-  const people = calorieLogic.allPeople().map((p) => {
-    const status = calorieLogic.personStatus(p);
-    return { ...status, entries: calorieLogic.todaysEntries(p.id) };
-  });
-
-  res.json({
+  const state = {
+    features: config.features,
+    people: calorieLogic.allPeople().map((p) => ({ id: p.id, name: p.name })),
     budget: {
       topline,
       buckets: regularBuckets,
       recentTransactions: budgetLogic.recentTransactions(25),
     },
-    calories: { people },
-    exercise: { entries: exerciseLogic.recentEntries(50) },
-  });
+    upcoming: { recipients: upcomingLogic.RECIPIENTS, items: upcomingLogic.listItems() },
+  };
+
+  if (config.features.calories) {
+    state.calories = {
+      people: calorieLogic.allPeople().map((p) => ({
+        ...calorieLogic.personStatus(p),
+        entries: calorieLogic.todaysEntries(p.id),
+      })),
+    };
+  }
+  if (config.features.exercise) {
+    state.exercise = { entries: exerciseLogic.recentEntries(50) };
+  }
+
+  res.json(state);
 });
 
 router.patch('/budget/buckets/:id', (req, res) => {
@@ -41,7 +60,7 @@ router.patch('/budget/buckets/:id', (req, res) => {
   res.json(updated);
 });
 
-router.patch('/calories/people/:id', async (req, res) => {
+router.patch('/calories/people/:id', requireFeature('calories'), async (req, res) => {
   const { daily_calorie_limit } = req.body;
   if (daily_calorie_limit == null || isNaN(Number(daily_calorie_limit))) {
     return res.status(400).json({ error: 'daily_calorie_limit must be a number' });
@@ -70,7 +89,7 @@ router.post('/budget/transactions', async (req, res) => {
   res.json(result);
 });
 
-router.post('/calories/entries', async (req, res) => {
+router.post('/calories/entries', requireFeature('calories'), async (req, res) => {
   const { person_id, calories, description } = req.body;
   const caloriesNum = Number(calories);
   if (!person_id || !Number.isFinite(caloriesNum)) {
@@ -84,7 +103,7 @@ router.post('/calories/entries', async (req, res) => {
   res.json(status);
 });
 
-router.post('/exercise/entries', (req, res) => {
+router.post('/exercise/entries', requireFeature('exercise'), (req, res) => {
   const { person_id, description } = req.body;
   if (!person_id || !description || !description.trim()) {
     return res.status(400).json({ error: 'person_id and description are required' });
@@ -102,10 +121,35 @@ router.delete('/budget/transactions/:id', (req, res) => {
   res.json(result);
 });
 
-router.delete('/calories/entries/:id', (req, res) => {
+router.delete('/calories/entries/:id', requireFeature('calories'), (req, res) => {
   const status = calorieLogic.deleteEntry(Number(req.params.id));
   if (!status) return res.status(404).json({ error: 'entry not found' });
   res.json(status);
+});
+
+// --- Upcoming expenses / items needed: stay until deleted (never archived or pruned). ---
+
+router.post('/upcoming', (req, res) => {
+  const { description, estimated_cost, for_person } = req.body;
+  const cost = Number(estimated_cost);
+  if (!description || !description.trim()) {
+    return res.status(400).json({ error: 'description is required' });
+  }
+  if (estimated_cost === '' || estimated_cost == null || !Number.isFinite(cost) || cost < 0) {
+    return res.status(400).json({ error: 'estimated cost must be a number, 0 or more' });
+  }
+  if (!upcomingLogic.RECIPIENTS.includes(for_person)) {
+    return res.status(400).json({ error: 'pick who the item is for' });
+  }
+  upcomingLogic.addItem({ description: description.trim(), estimatedCost: cost, forPerson: for_person });
+  res.json({ ok: true });
+});
+
+router.delete('/upcoming/:id', (req, res) => {
+  if (!upcomingLogic.deleteItem(Number(req.params.id))) {
+    return res.status(404).json({ error: 'item not found' });
+  }
+  res.json({ ok: true });
 });
 
 // --- Weekly archive: normally runs automatically every Saturday 11:59pm,

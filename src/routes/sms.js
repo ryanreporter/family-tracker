@@ -95,6 +95,13 @@ router.post('/', async (req, res) => {
       return reply(res, msg);
     }
 
+    if (parsed.section === 'calories' && !config.features.calories) {
+      return reply(res, 'Calorie tracking is turned off right now.');
+    }
+    if (parsed.section === 'exercise' && !config.features.exercise) {
+      return reply(res, 'Exercise tracking is turned off right now.');
+    }
+
     if (parsed.section === 'calories' && parsed.calories) {
       const { direct_amount, food_items, food_items_estimated_calories } = parsed.calories;
       const directAmountNum = direct_amount != null ? Number(direct_amount) : null;
@@ -131,7 +138,7 @@ router.post('/', async (req, res) => {
 
     return reply(
       res,
-      "Couldn't tell if that was a budget, calorie, or exercise entry — try rephrasing."
+      "Couldn't tell what that was — try rephrasing as a budget entry, like \"$50 for Donuts in Dining\"."
     );
   } catch (err) {
     console.error('[sms] Failed to apply parsed message:', err);

@@ -54,11 +54,14 @@ async function runWeeklyArchive() {
 }
 
 function start() {
-  cron.schedule('0 21 * * *', sendDailySummaries, { timezone: config.timezone });
-  cron.schedule('*/10 * * * *', checkLowCalorieAlerts, { timezone: config.timezone });
+  if (config.features.calories) {
+    cron.schedule('0 21 * * *', sendDailySummaries, { timezone: config.timezone });
+    cron.schedule('*/10 * * * *', checkLowCalorieAlerts, { timezone: config.timezone });
+  }
   cron.schedule('59 23 * * 6', runWeeklyArchive, { timezone: config.timezone });
   console.log(
-    `[scheduler] Started (timezone ${config.timezone}): 9pm summary + 10-min low-calorie sweep + Saturday 11:59pm weekly archive/reset.`
+    `[scheduler] Started (timezone ${config.timezone}): Saturday 11:59pm weekly archive/reset` +
+      (config.features.calories ? ' + 9pm summary + 10-min low-calorie sweep.' : ' (calorie schedules off).')
   );
 }
 

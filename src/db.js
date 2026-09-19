@@ -67,6 +67,14 @@ db.exec(`
     UNIQUE(person_id, entry_date, alert_type)
   );
 
+  CREATE TABLE IF NOT EXISTS upcoming_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    description TEXT NOT NULL,
+    estimated_cost REAL NOT NULL,
+    for_person TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS weekly_archives (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     week_key TEXT UNIQUE NOT NULL,

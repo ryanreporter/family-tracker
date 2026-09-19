@@ -34,7 +34,19 @@
     <ul id="transactions" class="list"></ul>
   </section>
 
-  <section id="calorie-section">
+  <section id="upcoming-section">
+    <h2>Upcoming Expenses / Items Needed</h2>
+    <div class="entry-form" id="upcoming-entry-form">
+      <input type="number" step="0.01" min="0" id="upcoming-entry-cost" placeholder="Estimated cost $" />
+      <input type="text" id="upcoming-entry-description" placeholder="Description" />
+      <select id="upcoming-entry-for"></select>
+      <button id="upcoming-entry-submit">Add</button>
+      <span class="form-msg" id="upcoming-entry-msg"></span>
+    </div>
+    <ul id="upcoming-items" class="list"></ul>
+  </section>
+
+  <section id="calorie-section" hidden>
     <h2>Food</h2>
     <div id="calorie-people" class="grid"></div>
 
@@ -48,7 +60,7 @@
     </div>
   </section>
 
-  <section id="exercise-section">
+  <section id="exercise-section" hidden>
     <h2>Exercise</h2>
     <ul id="exercise-entries" class="list"></ul>
 

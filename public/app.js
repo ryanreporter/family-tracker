@@ -4,6 +4,12 @@ function fmtMoney(n) {
   return `$${Number(n).toFixed(2)}`;
 }
 
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+let features = { calories: false, exercise: false };
+
 function remainingClass(remaining) {
   return remaining < 0 ? 'negative' : 'positive';
 }
@@ -202,10 +208,8 @@ function renderArchiveDetail(archive) {
     <div class="archive-detail">
       <h4>Budget (${fmtMoney(archive.total_spent)} total)</h4>
       <ul class="list">${txHtml}</ul>
-      <h4>Calories</h4>
-      <ul class="list">${calHtml}</ul>
-      <h4>Exercise</h4>
-      <ul class="list">${exHtml}</ul>
+      ${features.calories || calorieEntries.length ? `<h4>Calories</h4><ul class="list">${calHtml}</ul>` : ''}
+      ${features.exercise || exerciseEntries.length ? `<h4>Exercise</h4><ul class="list">${exHtml}</ul>` : ''}
     </div>
   `;
 }
@@ -268,11 +272,36 @@ function wireResetButton() {
   });
 }
 
+function renderUpcoming(upcoming) {
+  populateSelect(
+    document.getElementById('upcoming-entry-for'),
+    upcoming.recipients.map((r) => ({ id: r, name: r })),
+    'id',
+    'name'
+  );
+  const el = document.getElementById('upcoming-items');
+  el.innerHTML = upcoming.items.map((i) => `
+    <li>
+      ${fmtMoney(i.estimated_cost)} — ${escapeHtml(i.description)}
+      <div class="meta">
+        For ${escapeHtml(i.for_person)} · added ${fmtDateTime(i.created_at)}
+        <button class="delete-upcoming-btn delete-btn" data-id="${i.id}">Delete</button>
+      </div>
+    </li>
+  `).join('') || '<li class="meta">Nothing on the list.</li>';
+  el.querySelectorAll('.delete-upcoming-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      await deleteItem(`/api/upcoming/${btn.dataset.id}`);
+      load();
+    });
+  });
+}
+
 function populateEntryFormDropdowns(data) {
   populateSelect(document.getElementById('budget-entry-bucket'), data.budget.buckets, 'id', 'name');
-  populateSelect(document.getElementById('budget-entry-person'), data.calories.people, 'id', 'name');
-  populateSelect(document.getElementById('calorie-entry-person'), data.calories.people, 'id', 'name');
-  populateSelect(document.getElementById('exercise-entry-person'), data.calories.people, 'id', 'name');
+  populateSelect(document.getElementById('budget-entry-person'), data.people, 'id', 'name');
+  if (data.calories) populateSelect(document.getElementById('calorie-entry-person'), data.people, 'id', 'name');
+  if (data.exercise) populateSelect(document.getElementById('exercise-entry-person'), data.people, 'id', 'name');
 }
 
 async function load() {
@@ -280,6 +309,9 @@ async function load() {
     const res = await fetch('/api/state');
     if (!res.ok) return;
     const data = await res.json();
+    features = data.features;
+    document.getElementById('calorie-section').hidden = !features.calories;
+    document.getElementById('exercise-section').hidden = !features.exercise;
 
     // If the user is actively typing in a bucket/limit field, rebuilding
     // those cards right now would wipe out whatever they've typed but not
@@ -294,11 +326,12 @@ async function load() {
     if (!editingField) {
       renderTopline(data.budget.topline);
       renderBuckets(data.budget.buckets);
-      renderCaloriePeople(data.calories.people);
+      if (data.calories) renderCaloriePeople(data.calories.people);
     }
 
     renderTransactions(data.budget.recentTransactions);
-    renderExercise(data.exercise.entries);
+    if (data.exercise) renderExercise(data.exercise.entries);
+    renderUpcoming(data.upcoming);
     populateEntryFormDropdowns(data);
   } catch (err) {
     console.error('Failed to load state', err);
@@ -316,6 +349,22 @@ function wireEntryForms() {
       await postJson('/api/budget/transactions', { bucket_id, amount, description, person_id });
       document.getElementById('budget-entry-amount').value = '';
       document.getElementById('budget-entry-description').value = '';
+      showFormMsg(msgEl, 'Added.', false);
+      load();
+    } catch (err) {
+      showFormMsg(msgEl, err.message, true);
+    }
+  });
+
+  document.getElementById('upcoming-entry-submit').addEventListener('click', async () => {
+    const msgEl = document.getElementById('upcoming-entry-msg');
+    const estimated_cost = document.getElementById('upcoming-entry-cost').value;
+    const description = document.getElementById('upcoming-entry-description').value;
+    const for_person = document.getElementById('upcoming-entry-for').value;
+    try {
+      await postJson('/api/upcoming', { estimated_cost, description, for_person });
+      document.getElementById('upcoming-entry-cost').value = '';
+      document.getElementById('upcoming-entry-description').value = '';
       showFormMsg(msgEl, 'Added.', false);
       load();
     } catch (err) {

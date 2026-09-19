@@ -35,6 +35,14 @@ module.exports = {
     pass: process.env.DASHBOARD_PASS || 'change-me',
   },
 
+  // Calorie and exercise tracking are switched off by default. Their code and
+  // data stay intact; set ENABLE_CALORIES=true / ENABLE_EXERCISE=true in the
+  // environment (and redeploy) to bring them back.
+  features: {
+    calories: process.env.ENABLE_CALORIES === 'true',
+    exercise: process.env.ENABLE_EXERCISE === 'true',
+  },
+
   lowCalorieThreshold: 200,
   budgetAlertThresholds: [25, 15, 10, 0], // percent remaining, checked high to low
 };

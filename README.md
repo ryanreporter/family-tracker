@@ -115,6 +115,19 @@ Text your Twilio number from Joe's or Hillary's phone:
 Then open `https://your-app.../` in a phone browser (log in with the dashboard
 user/pass) to see it reflected — from both phones, regardless of who texted it in.
 
+## Calorie / exercise tracking (currently off)
+
+Food and Exercise are hidden from the dashboard, the SMS handler, and the 9pm/low-calorie
+text schedules by default, but all code and any saved data are kept. To turn them back on,
+set `ENABLE_CALORIES=true` and/or `ENABLE_EXERCISE=true` in your host's environment
+variables and redeploy.
+
+## Upcoming Expenses / Items Needed
+
+A list right under Budget for things coming up: estimated cost, description, and who it's
+for (Hillary, Joe, Connor, Nora, Tommy, Alex, Tristan, Other). Items stay until deleted —
+the weekly reset/archive never touches them.
+
 ## Adjusting things later
 
 Bucket names/limits/timeframes and daily calorie limits are edited directly on the
