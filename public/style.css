@@ -137,3 +137,6 @@ h3 { font-size: 0.9rem; color: var(--muted); margin: 16px 0 4px; }
 }
 .archive-body { margin-top: 8px; }
 .archive-detail h4 { font-size: 0.8rem; color: var(--muted); margin: 10px 0 4px; }
+
+.list .sub-list { list-style: none; padding: 4px 0 0 16px; margin: 0; }
+.list .sub-list li { border-bottom: none; padding: 3px 0; }

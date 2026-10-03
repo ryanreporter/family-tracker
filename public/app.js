@@ -86,35 +86,6 @@ function renderTopline(topline) {
   wireBucketEditRow(el.querySelector('.edit-row'));
 }
 
-function renderBuckets(buckets) {
-  const el = document.getElementById('buckets');
-  el.innerHTML = buckets.map((b) => `
-    <div class="card">
-      <div class="bucket-name">${b.name} (${b.period})</div>
-      <div class="sub">Spent this ${b.period === 'weekly' ? 'week' : 'month'}: ${fmtMoney(b.spent)}</div>
-      <div class="edit-row" data-id="${b.id}">
-        <input type="text" class="f-name" value="${b.name}" />
-        <select class="f-period">
-          <option value="weekly" ${b.period === 'weekly' ? 'selected' : ''}>weekly</option>
-          <option value="monthly" ${b.period === 'monthly' ? 'selected' : ''}>monthly</option>
-        </select>
-        <button class="save-bucket">Save</button>
-      </div>
-    </div>
-  `).join('');
-  el.querySelectorAll('.edit-row').forEach(wireBucketNameEditRow);
-}
-
-function wireBucketNameEditRow(row) {
-  row.querySelector('.save-bucket').addEventListener('click', async () => {
-    const id = row.dataset.id;
-    const name = row.querySelector('.f-name').value;
-    const period = row.querySelector('.f-period').value;
-    await patchJson(`/api/budget/buckets/${id}`, { name, period });
-    load();
-  });
-}
-
 function wireBucketEditRow(row) {
   row.querySelector('.save-bucket').addEventListener('click', async () => {
     const id = row.dataset.id;
@@ -325,7 +296,6 @@ async function load() {
       active && (active.tagName === 'INPUT' || active.tagName === 'SELECT') && active.closest('.edit-row');
     if (!editingField) {
       renderTopline(data.budget.topline);
-      renderBuckets(data.budget.buckets);
       if (data.calories) renderCaloriePeople(data.calories.people);
     }
 
